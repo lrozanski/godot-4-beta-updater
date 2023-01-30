@@ -8,10 +8,10 @@ import Downloader from "nodejs-file-downloader"
 import cliProgress from "cli-progress"
 import { round } from "lodash"
 import { existsSync, fstat, linkSync, symlinkSync } from "fs"
-import { join } from "path"
+import { join, resolve } from "path"
 import AdmZip from "adm-zip"
 import { exit } from "process"
-import {createDesktopShortcut} from "create-desktop-shortcuts"
+import createDesktopShortcut from "create-desktop-shortcuts"
 
 const godot4MonoBetaLabel = chalk.greenBright("Godot 4 Beta .NET")
 
@@ -82,10 +82,6 @@ async function downloadLatestBeta(filename: string, path: string, downloadDirect
     return filePath
 }
 
-function unzipToDestination() {
-
-}
-
 resolveLatestBetaPath()
     .then(async ({ filename, path, betaName }) => {
         const downloadDirectory = "downloads/"
@@ -94,10 +90,10 @@ resolveLatestBetaPath()
         if (!existsSync(downloadPath)) {
             await downloadLatestBeta(filename, path, downloadDirectory)
         } else if (existsSync(downloadPath) || existsSync(downloadPath.replace(".zip", ""))) {
-            console.log(chalk.yellow(`Latest version already downloaded. Skipping download`))
+            console.log(chalk.yellowBright(`Latest version already downloaded. Skipping download`))
         }
         if (existsSync(downloadPath.replace(".zip", ""))) {
-            console.log(chalk.yellow("Archive already extracted. Skipping"));
+            console.log(chalk.yellowBright("Archive already extracted. Skipping"));
         } else {
             console.log(`Extracting archive to ${chalk.blueBright(downloadDirectory)}`);
             try {
@@ -109,27 +105,33 @@ resolveLatestBetaPath()
             console.log(chalk.greenBright("Archive extracted successfully"))
         }
         const executableFilename = `Godot_v4.0-${betaName}_mono_win64.exe`
-        const executablePath = join(downloadPath.replace(".zip", ""), executableFilename)
+        const executablePath = resolve(join(downloadPath.replace(".zip", ""), executableFilename))
 
         try {
             const hardLinkTarget = executablePath
             const hardLinkPath = join(`C:\\Users\\lroza\\godot\\latest\\Godot_v4.0-beta_mono_win64.exe`)
 
-            console.log(`Creating hard link to ${chalk.blueBright(hardLinkTarget)} at ${chalk.blueBright(hardLinkPath)}`)
-            linkSync(hardLinkTarget, hardLinkPath)
-            console.log(chalk.greenBright("Hard link created successfully"))
+            if (existsSync(hardLinkPath)) {
+                console.log(chalk.yellowBright("Symlink already exists. Skipping"))
+            } else {
+                console.log(`Creating hard link to ${chalk.blueBright(hardLinkTarget)} at ${chalk.blueBright(hardLinkPath)}`)
+                linkSync(hardLinkTarget, hardLinkPath)
+                console.log(chalk.greenBright("Hard link created successfully"))
+            }
         } catch (e) {
             console.error(chalk.red(`Creating hard link failed with message: ${e}. Exiting`))
             exit(1)
         }
-        const shortcutCreated = createDesktopShortcut({windows: {
-            filePath: executablePath,
-            outputPath: `C:\\Users\\lroza\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Godot_v4.0-beta_mono_win64.exe`,
-            name: "Godot 4 Mono Beta",
-            icon: executablePath
-        }})
+        const shortcutCreated = createDesktopShortcut({
+            windows: {
+                filePath: executablePath,
+                outputPath: "C:\\Users\\lroza\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\",
+                name: "Godot 4 Mono Beta",
+                icon: executablePath
+            }
+        })
         if (shortcutCreated) {
-            console.log(chalk.greenBright("Start Menu shorcut created successfully"));
+            console.log(chalk.greenBright("Start Menu shortcut created successfully"))
         } else {
             console.error(chalk.red("Creating Start Menu shortcut failed. Exiting"))
             exit(1)

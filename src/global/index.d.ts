@@ -6,5 +6,5 @@ type WindowsParams = {
 }
 
 declare module "create-desktop-shortcuts" {
-    export function createDesktopShortcut(params: {windows: WindowsParams}): boolean
+    export default function createDesktopShortcut(params: {windows: WindowsParams}): boolean
 }
