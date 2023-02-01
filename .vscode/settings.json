@@ -1,0 +1,11 @@
+{
+    "prettier.arrowParens": "avoid",
+    "prettier.bracketSameLine": true,
+    "prettier.bracketSpacing": false,
+    "prettier.printWidth": 180,
+    "prettier.semi": false,
+    "prettier.tabWidth": 4,
+    "svelte.plugin.svelte.format.config.printWidth": 180,
+    "files.autoSave": "afterDelay",
+    "typescriptHero.imports.insertSemicolons": false
+}
