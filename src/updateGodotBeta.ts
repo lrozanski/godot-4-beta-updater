@@ -29,9 +29,14 @@ program
     .version("1.0.0")
     .description("A CLI tool meant to automatically update Godot 4 beta .NET versions")
     .requiredOption("-t, --target-folder <path>", "Path to the directory which will store all Godot versions")
+    .option("-b, --beta <value>", "Godot 4 Beta version (e.g. 17)")
     .parse(process.argv)
 
-const options = program.opts<{targetFolder: string}>()
+type Options = {
+    targetFolder: string
+    beta?: string
+}
+const options = program.opts<Options>()
 const targetFolder = options.targetFolder.replace(/\\+/g, "/")
 !existsSync(targetFolder) && mkdirSync(targetFolder)
 
@@ -45,9 +50,10 @@ async function findLatestBeta() {
     const response = await axios.get("https://downloads.tuxfamily.org/godotengine/4.0/")
     const root = parse(response.data as string)
     const links = root.querySelectorAll("a")
+    const linkText = options.beta ?? "beta"
     const latestBeta = links
         .sort(compareLinks)
-        .filter(link => link.textContent.includes("beta"))
+        .filter(link => link.textContent.includes(linkText))
         .slice(-1)
 
     return latestBeta[0].getAttribute("href")?.replace("/", "")
