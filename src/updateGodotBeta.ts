@@ -50,7 +50,7 @@ async function findLatestBeta() {
     const response = await axios.get("https://downloads.tuxfamily.org/godotengine/4.0/")
     const root = parse(response.data as string)
     const links = root.querySelectorAll("a")
-    const linkText = options.beta ?? "beta"
+    const linkText = `beta${options.beta ?? ""}`
     const latestBeta = links
         .sort(compareLinks)
         .filter(link => link.textContent.includes(linkText))
